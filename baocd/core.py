@@ -288,6 +288,8 @@ class Puzzle:
     @property
     def examples(self): return puzzle_examples(self.year, self.day, self.token)
     @property
+    def example(self): return self.examples[0].input_data if self.examples else json("[]")
+    @property
     def submit_results(self): return submit_results(self.year, self.day, self.token)
     @property
     def answer_a(self):

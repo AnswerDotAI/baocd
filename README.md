@@ -8,14 +8,12 @@
 ## Installation
 
 ``` bash
-git clone https://github.com/AnswerDotAI/baocd.git
-cd baocd
-pip install -e .
+ pip install git+https://github.com/AnswerDotAI/baocd.git
 ```
 
 ## Setup
 
-1.  Login to [Advent of Code](https://adventofcode.com)
+1.  Log in to [Advent of Code](https://adventofcode.com)
 2.  Open browser Dev Tools and copy the `session` cookie.
 3.  Set it as `AOC_SESSION` in your SolveIt secrets.
 
@@ -26,8 +24,9 @@ from baocd import get_puzzle
 
 puzzle = get_puzzle(day=1, year=2026)
 lines = puzzle.input_data
-examples = puzzle.examples[0].input_data
-# After computing answer from lines:
+example = puzzle.example
 answer = ...
 puzzle.submit(answer)
 ```
+
+`.input_data` is a BPL `Array` of **split lines**. For the raw text format use `.raw_input_data`.
