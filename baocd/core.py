@@ -30,26 +30,26 @@ NON_ANSWER = ("", b"", None, b"None", "None")
 _token2id = None
 
 _norm_part = atop(
-    -1 | c,
-    replace | catenate(enclose(Array("2")), enclose(Array("b"))),
-    replace | catenate(enclose(Array("1")), enclose(Array("a"))),
+    -1|c,
+    replace|catenate(enclose(Array("2")), enclose(Array("b"))),
+    replace|catenate(enclose(Array("1")), enclose(Array("a"))),
 )
-_wait_groups = (r | r"You have (?:(\d+)m )?(\d+)s left to wait")["groups"]
+_wait_groups = (r|r"You have (?:(\d+)m )?(\d+)s left to wait")["groups"]
 _norm_social = atop(
-    replace | Array(["https://www.reddit.com/u/", "reddit/"]),
-    replace | Array(["https://github.com/", "github/"]),
-    replace | Array(["https://twitter.com/", "twitter/"]),
-    (Array("Link to ") | catenate).undo,
+    replace|Array(["https://www.reddit.com/u/", "reddit/"]),
+    replace|Array(["https://github.com/", "github/"]),
+    replace|Array(["https://twitter.com/", "twitter/"]),
+    (Array("Link to ")|catenate).undo,
 )
-_now_iso = atop(dict(pattern="%Y-%m-%d %H:%M:%S-05:00", zone=EST_OFFSET) | date.undo, time)
+_now_iso = atop(dict(pattern="%Y-%m-%d %H:%M:%S-05:00", zone=EST_OFFSET)|date.undo, time)
 
-
+# %% ../nbs/01_core.ipynb #a422a5c0
 def _is_non_answer(val):
     if isinstance(val, Array):
         return (beq(val, Array("")) or beq(val, Array("None"))) if val._inner.text is not None else False
     return val in NON_ANSWER
 
-
+# %% ../nbs/01_core.ipynb #86debd2e
 def is_final_day(year, day): return (int(day) == 12) if int(year) >= 2025 else (int(day) == 25)
 
 # %% ../nbs/01_core.ipynb #e50c6e7d
@@ -62,7 +62,7 @@ def default_token():
     except FileNotFoundError: pass
     raise AocdError(f"Missing AoC session token: set AOC_SESSION or save it to {pystr(tok_f)}")
 
-
+# %% ../nbs/01_core.ipynb #f94ce3f2
 def get_owner(token):
     "Find owner of an AoC session token (`'authtype.username.userid'`) via pure-BPL `•r`."
     tok = bstr(token)
@@ -85,7 +85,7 @@ def get_owner(token):
         auth_src, username = Array("google"), unescape_html(goog_m.groups[0][0])
     return bjoin(".", Array([auth_src, username, userid]))
 
-
+# %% ../nbs/01_core.ipynb #a7c21d98
 def user_id(token):
     "Cached `'authtype.username.userid'` stored in `token2id.json` (shared with `aocd`)."
     global _token2id
@@ -102,10 +102,10 @@ def user_id(token):
         return owner
     return _token2id[k]
 
-
+# %% ../nbs/01_core.ipynb #911ebbeb
 def puzzle_url(year, day): return Array(f"https://adventofcode.com/{int(year)}/day/{int(day)}")
 
-
+# %% ../nbs/01_core.ipynb #d5cb0689
 def puzzle_paths(year, day, token):
     "Cache file paths for `(year, day, token)` matching `~/.config/aocd` layout."
     stem, mdir = f"{int(year)}_{int(day):02d}", join_path(AOCD_DATA_DIR, user_id(token))
@@ -134,13 +134,13 @@ def raw_input_data(year, day, token):
     atomic_write_file(p, resp.body)
     return brstrip_nl(resp.body)
 
-
+# %% ../nbs/01_core.ipynb #81b1be47
 def _save_answer(year, day, value, part, token):
     p, txt = puzzle_paths(year, day, token)[f"answer_{part}"], bstrip(bstr(value))
     if is_file(p) and beq(txt, read_text(p)): return
     write_text(p, txt)
 
-
+# %% ../nbs/01_core.ipynb #7855c9d6
 def _request_prose(year, day, token):
     url = puzzle_url(year, day)
     resp = http_get(url, token=token)
@@ -158,7 +158,7 @@ def _request_prose(year, day, token):
         write_text(paths.prose0, text)
     return text
 
-
+# %% ../nbs/01_core.ipynb #b20192b7
 def puzzle_prose(year, day, token):
     "Read cached puzzle HTML prose or fetch from adventofcode.com."
     paths = puzzle_paths(year, day, token)
@@ -166,15 +166,15 @@ def puzzle_prose(year, day, token):
         if is_file(pth): return read_text(pth)
     return _request_prose(year, day, token)
 
-
+# %% ../nbs/01_core.ipynb #0d7bd053
 def puzzle_title(year, day, token):
     "Puzzle title as a BasedPL `Array` string, stripped via inverse catenate (`,⁻`)."
     h2s = tag_texts(puzzle_prose(year, day, token), "h2", strip_ws=True)
     if not h2s: raise AocdError("heading not found")
-    try: return (catenate | Array(" ---")).undo(catenate.undo(Array(f"--- Day {int(day)}: "), h2s[0]))
+    try: return (catenate|Array(" ---")).undo(catenate.undo(Array(f"--- Day {int(day)}: "), h2s[0]))
     except BplError: raise AocdError(f"unexpected h2 text: {pystr(h2s[0])}")
 
-
+# %% ../nbs/01_core.ipynb #4e5f3148
 def puzzle_examples(year, day, token):
     "Extract puzzle example(s) via pure-BPL `•r` with pre-split BasedPL line `Array` `input_data`."
     arts = r(puzzle_prose(year, day, token), r"(?is)<article\b[^>]*>(.*?)</article>").groups
@@ -190,7 +190,7 @@ def puzzle_examples(year, day, token):
         if codes_b and len(ws := bwords(codes_b[-1])): ans_b = ws[-1]
     return [SimpleNamespace(input_data=bsplit_lines(pres[0]), answer_a=ans_a, answer_b=ans_b, answers=(ans_a, ans_b))]
 
-
+# %% ../nbs/01_core.ipynb #74e13576
 def puzzle_answer(year, day, part, token):
     "Return cached/fetched answer for `(year, day, part)` as a BasedPL `Array`, or `None` if unsolved."
     if is_final_day(year, day) and part == "b": return Array("")
@@ -199,12 +199,12 @@ def puzzle_answer(year, day, part, token):
     _request_prose(year, day, token)
     return bstrip(read_text(p)) if is_file(p) else None
 
-
+# %% ../nbs/01_core.ipynb #7b344035
 def submit_results(year, day, token):
     p = puzzle_paths(year, day, token).submit_results
     return read_json(p) if is_file(p) else json("[]")
 
-
+# %% ../nbs/01_core.ipynb #b569c588
 def submit_answer(year, day, value, part=None, token=None, reopen=True, quiet=False):
     "Submit an answer to adventofcode.com (auto-detecting part a/b if `part` is None) with local guardrails and auto-retry."
     if _is_non_answer(value): raise AocdError(f"cowardly refusing to submit non-answer: {value!r}")

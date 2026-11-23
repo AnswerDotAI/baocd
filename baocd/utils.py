@@ -25,30 +25,33 @@ class PuzzleLockedError(AocdError): "Puzzle input is not available yet."
 class DeadTokenError(AocdError): "Session token is expired or invalid."
 
 # %% ../nbs/00_utils.ipynb #aa9c3361
-bstrip = replace | Array([r"^\s+|\s+$", ""])
-brstrip_nl = replace | Array([r"[\r\n]+$", ""])
-_strip_lead_slash = replace | Array([r"^/+", ""])
-_strip_trail_slash = replace | Array([r"/+$", ""])
-_lower = -1 | c
+bstrip = replace|Array([r"^\s+|\s+$", ""])
+brstrip_nl = replace|Array([r"[\r\n]+$", ""])
+_strip_lead_slash = replace|Array([r"^/+", ""])
+_strip_trail_slash = replace|Array([r"/+$", ""])
+_lower = -1|c
 
+# %% ../nbs/00_utils.ipynb #d5be5420
 bhas = atop(or_.reduce, find)
 bstartswith = fork(same_left, match, tally.before(take))
 bendswith = fork(same_left, match, (-tally).before(take))
-bwords = atop(not_, member | Array(" \t\r\n")).before(partition)
-bsplit_path = atop(not_, member | Array("/\\")).before(partition)
+bwords = atop(not_, member|Array(" \t\r\n")).before(partition)
+bsplit_path = atop(not_, member|Array("/\\")).before(partition)
 
+# %% ../nbs/00_utils.ipynb #d512f145
 _bjoin_ne = fork(atop(tally, same_left), drop, atop(enlist, fork(atop(enclose, same_left), catenate.each, same)))
-bjoin = atop(0 | less, tally, same).agenda(Array([Array(""), _bjoin_ne]))
+bjoin = atop(0|less, tally, same).agenda(Array([Array(""), _bjoin_ne]))
 
-_is_nonempty_str = fork(atop(0 | less, tally), and_, atop(1 | equal, depth))
+# %% ../nbs/00_utils.ipynb #fbbceb0e
+_is_nonempty_str = fork(atop(0|less, tally), and_, atop(1|equal, depth))
 _split_ne = atop(
-    (1 | drop).each,
-    (equal | Array("\n")).before(partitioned_enclose),
-    Array("\n") | catenate,
-    without | Array("\r"),
+    (1|drop).each,
+    (equal|Array("\n")).before(partitioned_enclose),
+    Array("\n")|catenate,
+    without|Array("\r"),
 )
-_split_str = atop(atop(0 | less, tally).agenda(Array([json("[]"), _split_ne])), brstrip_nl)
-bsplit_lines = _is_nonempty_str.agenda(Array([atop(0 | less, tally).agenda(Array([json("[]"), same])), _split_str]))
+_split_str = atop(atop(0|less, tally).agenda(Array([json("[]"), _split_ne])), brstrip_nl)
+bsplit_lines = _is_nonempty_str.agenda(Array([atop(0|less, tally).agenda(Array([json("[]"), same])), _split_str]))
 
 # %% ../nbs/00_utils.ipynb #8145c66b
 def bstr(x):
@@ -56,34 +59,36 @@ def bstr(x):
     if isinstance(x, Array): return x if x._inner.text is not None else Array(str(x.py))
     return Array(str(x))
 
-
+# %% ../nbs/00_utils.ipynb #bfa19bf5
 def pystr(x):
     "Extract a Python `str` from a BasedPL `Array` or Python value."
     if isinstance(x, Array): return x.py if x._inner.text is not None else str(x.py)
     return str(x)
 
-
+# %% ../nbs/00_utils.ipynb #ccebd164
 def aiter(arr):
     "Iterate disclosed items of a 1D BasedPL `Array`."
     for i in range(len(arr)): yield arr[i]
 
-
+# %% ../nbs/00_utils.ipynb #981c08b7
 def beq(a, b):
     "Structural equality via BasedPL `match` (`≡`), safely handling `None`."
     if a is None or b is None: return a is None and b is None
     return bool(match(a if isinstance(a, Array) else Array(a), b if isinstance(b, Array) else Array(b)))
 
-
+# %% ../nbs/00_utils.ipynb #a70727c2
 def test_beq(a, b):
     "Test BasedPL structural equality (`≡`) using `fastcore.all.test`."
     from fastcore.all import test
     test(a, b, beq, cname="≡")
 
-
+# %% ../nbs/00_utils.ipynb #70a5bdc8
 def rec_keys(rec): return rec.keys[0] if rec.keys and rec.keys[0] is not None else ()
+
+# %% ../nbs/00_utils.ipynb #29f640cd
 def rec_has(rec, key): return key in rec_keys(rec)
 
-
+# %% ../nbs/00_utils.ipynb #19952517
 def rec_set(rec, key, val):
     "Return keyed BasedPL `Array` `rec` with `key` set or appended to `val`."
     if not rec_has(rec, key): return catenate(rec, Array({key: val}))
@@ -99,11 +104,11 @@ _NAMED_ENTITIES = (
     ("&amp;", "&"),
 )
 _dec_char = atop(ravel, ucs, vfi[1][0])
-_hex_char = atop(ravel, ucs, 16 | decode, _HEX | index_of, _lower)
-_unescape_named = py_reduce(lambda f, kv: atop(replace | Array(list(kv)), f), _NAMED_ENTITIES, same)
-strip_tags = replace | Array([r"(?s)<[^>]+>", ""])
+_hex_char = atop(ravel, ucs, 16|decode, _HEX|index_of, _lower)
+_unescape_named = py_reduce(lambda f, kv: atop(replace|Array(list(kv)), f), _NAMED_ENTITIES, same)
+strip_tags = replace|Array([r"(?s)<[^>]+>", ""])
 
-
+# %% ../nbs/00_utils.ipynb #7587c355
 def _decode_entities(s, pat, to_char):
     m = r(s, pat)
     if not len(m.text): return s
@@ -112,7 +117,7 @@ def _decode_entities(s, pat, to_char):
     for i in range(len(ks)): s = replace(s, catenate(enclose(ks[i]), enclose(to_char(gs[i][0]))))
     return s
 
-
+# %% ../nbs/00_utils.ipynb #a7754e52
 def unescape_html(text):
     "Decode numeric and named HTML entities natively on BasedPL `Array`s."
     s = bstr(text)
@@ -121,7 +126,7 @@ def unescape_html(text):
     s = _decode_entities(s, r"&#[xX]([0-9a-fA-F]+);", _hex_char)
     return _unescape_named(s)
 
-
+# %% ../nbs/00_utils.ipynb #7b408691
 def tag_texts(html, tag, strip_ws=False):
     "Extract inner text of every `<tag>...</tag>` element as a list of unescaped BasedPL `Array`s."
     gs = r(bstr(html), rf"(?is)<{tag}\b[^>]*>(.*?)</{tag}>").groups
@@ -129,32 +134,32 @@ def tag_texts(html, tag, strip_ws=False):
     return [bstrip(x) for x in out] if strip_ws else out
 
 # %% ../nbs/00_utils.ipynb #d2bc72f4
-_host_env = atop(host, Array("env") | same_left)
+_host_env = atop(host, Array("env")|same_left)
 _pick_empty = pick.axis(Array(fill=Array("")))
 _get_home = atop(
     fork(
-        Array("HOME") | _pick_empty,
-        atop(0 | less, tally, same_left).agenda(Array([same, same_left])),
-        Array("USERPROFILE") | _pick_empty,
+        Array("HOME")|_pick_empty,
+        atop(0|less, tally, same_left).agenda(Array([same, same_left])),
+        Array("USERPROFILE")|_pick_empty,
     ),
     _host_env,
 )
 
-expand_path = fork(Array("~") | match, or_, Array("~/") | bstartswith).agenda(Array([same, fork(_get_home, catenate, 1 | drop)]))
+expand_path = fork(Array("~")|match, or_, Array("~/")|bstartswith).agenda(Array([same, fork(_get_home, catenate, 1|drop)]))
 parent_dir = atop(path["parent"], expand_path)
 file_name = atop(path["name"], expand_path)
 path_kind = atop(metadata["kind"][0], expand_path)
-is_dir = atop(Array("dir") | match, path_kind)
-is_file = atop(member | Array(["file", "symlink"]), enclose, path_kind)
+is_dir = atop(Array("dir")|match, path_kind)
+is_file = atop(member|Array(["file", "symlink"]), enclose, path_kind)
 
-
+# %% ../nbs/00_utils.ipynb #fac3655e
 def env_get(name, default=None):
     "Read an environment variable via `•host 'env'`."
     env = host("env")
     if default is not None: return pick.axis(Array(fill=bstr(default)))(name, env)
     return env[name] if rec_has(env, name) else None
 
-
+# %% ../nbs/00_utils.ipynb #6741e23c
 def join_path(*parts):
     "Join path segments into a clean BasedPL path `Array`."
     segs = []
@@ -169,14 +174,14 @@ def join_path(*parts):
     res = bjoin("/", Array(segs)) if len(segs) > 1 else segs[0]
     return res if len(res) else Array("/")
 
-
+# %% ../nbs/00_utils.ipynb #c6a80455
 def read_text(p):
     "Read a UTF-8 file via `•nget`."
     ep = expand_path(p)
     if not is_file(ep): raise FileNotFoundError(pystr(ep))
     return nget(ep)
 
-
+# %% ../nbs/00_utils.ipynb #fb408d60
 def write_text(p, contents):
     "Write UTF-8 text via `•mkdir` and `•nput` (`overwrite=1`)."
     ep = expand_path(p)
@@ -184,7 +189,7 @@ def write_text(p, contents):
     if len(par) and not is_dir(par): mkdir(par)
     nput(bstr(contents), path=ep, overwrite=1)
 
-
+# %% ../nbs/00_utils.ipynb #a9fb2d90
 def atomic_write_file(p, contents):
     "Atomically write text via unique `•nput` and `•rename`."
     ep = expand_path(p)
@@ -193,8 +198,10 @@ def atomic_write_file(p, contents):
     tmp = nput(bstr(contents), path=par if len(par) else Array("."), unique=1, prefix=".baocd_tmp_")
     rename(ep, tmp)
 
-
+# %% ../nbs/00_utils.ipynb #1912e359
 def read_json(p): return json(read_text(p))
+
+# %% ../nbs/00_utils.ipynb #2ddf1733
 def write_json(p, obj): atomic_write_file(p, json.undo(obj if isinstance(obj, Array) else Array(obj)))
 
 # %% ../nbs/00_utils.ipynb #43ab0be7
@@ -204,18 +211,18 @@ _BASE_HEADERS = Array({"User-Agent": f"github.com/AnswerDotAI/baocd baocd/{_pkg_
 
 _HEX_UPPER = Array("0123456789ABCDEF")
 _UNRESERVED_BYTES = ucs("UTF-8", enlist(Array([bpl("$a"), c(-1, bpl("$a")), bpl("$d"), Array("-_.~")])))
-_hex_byte = atop(enclose, Array("%") | catenate, _HEX_UPPER | index_of.undo, Array([16, 16]) | encode).rank(0)
-_sel_byte = atop(double, not_, member | _UNRESERVED_BYTES) - (equal | 32)
-percent_encode = atop(0 | less, tally).agenda(Array([
+_hex_byte = atop(enclose, Array("%")|catenate, _HEX_UPPER|index_of.undo, Array([16, 16])|encode).rank(0)
+_sel_byte = atop(double, not_, member|_UNRESERVED_BYTES) - (equal|32)
+percent_encode = atop(0|less, tally).agenda(Array([
     Array(""),
-    atop(enlist, _sel_byte.agenda(Array([atop(enclose, ucs).rank(0), enclose(Array("+")), _hex_byte])), Array("UTF-8") | ucs),
+    atop(enlist, _sel_byte.agenda(Array([atop(enclose, ucs).rank(0), enclose(Array("+")), _hex_byte])), Array("UTF-8")|ucs),
 ]))
-_pair_eq = fork(atop(percent_encode, same_left), catenate, atop(Array("=") | catenate, percent_encode, same))
+_pair_eq = fork(atop(percent_encode, same_left), catenate, atop(Array("=")|catenate, percent_encode, same))
 
 _http_max_t, _http_cooloff = 3.0, 0.16
 _http_history = reshape(Array([4]), time(0) - _http_max_t)
 
-
+# %% ../nbs/00_utils.ipynb #02dbb12c
 def form_encode(fields):
     "Encode a keyed `Array` or dict as `application/x-www-form-urlencoded`."
     items = [(k, fields[k]) for k in rec_keys(fields)] if isinstance(fields, Array) else list(fields.items())
@@ -223,7 +230,7 @@ def form_encode(fields):
     pairs = [_pair_eq(bstr(k), bstr(v)) for k, v in items]
     return pairs[0] if len(pairs) == 1 else bjoin("&", Array(pairs))
 
-
+# %% ../nbs/00_utils.ipynb #b5596183
 def _rate_limit():
     global _http_cooloff, _http_history
     now = float(time(0))
@@ -232,7 +239,7 @@ def _rate_limit():
         _http_cooloff = float(minimum(Array(10.0), double(Array(_http_cooloff))))
     _http_history = catenate(drop(1, _http_history), Array(now))
 
-
+# %% ../nbs/00_utils.ipynb #0091dd7c
 def _headers(token=None, extra=None):
     hdrs = _BASE_HEADERS
     if token is not None: hdrs = rec_set(hdrs, "Cookie", catenate(Array("session="), bstr(token)))
@@ -240,19 +247,19 @@ def _headers(token=None, extra=None):
         for k, v in extra.items(): hdrs = rec_set(hdrs, k, bstr(v))
     return hdrs
 
-
+# %% ../nbs/00_utils.ipynb #4f7a2290
 def http_get(url, token=None):
     "Rate-limited HTTP GET via `•fetch`, returning a native BasedPL `Array` (`status`, `headers`, `body`)."
     _rate_limit()
     return fetch(bstr(url), headers=_headers(token=token))
 
-
+# %% ../nbs/00_utils.ipynb #1a648374
 def http_post(url, token, fields):
     "Rate-limited HTTP POST via `•fetch`, returning a native BasedPL `Array` (`status`, `headers`, `body`)."
     _rate_limit()
     return fetch(bstr(url), headers=_headers(token=token, extra={"Content-Type": "application/x-www-form-urlencoded"}), body=form_encode(fields))
 
-
+# %% ../nbs/00_utils.ipynb #dd101fcb
 def coerce(val):
     "Convert an answer (BPL Array, int, integral float/complex/Decimal/Fraction, bytes, str) to a BasedPL string `Array`."
     orig = val

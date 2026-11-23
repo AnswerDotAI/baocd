@@ -18,28 +18,28 @@ from baocd.utils import (
 _PATTERN_YEAR = r"201[5-9]|202[0-9]"
 _PATTERN_DAY = r"2[0-5]|1[0-9]|[1-9]"
 
-_aoc_est_now = atop(dict(zone=EST_OFFSET) | date.undo, time)
-_recent_year = fork(same["year"], subtract, atop(less | 12, same["month"]))
-_cur_day_dec = fork(same["day"], minimum, atop(less | 2025, same["year"]).agenda(Array([12, 25])))
-_strip_part = replace | Array([r"part.*$", ""])
-_strip_year = replace | Array([_PATTERN_YEAR, ""])
-_extract_yrs = atop(unique, vfi[1][0].each, (r | _PATTERN_YEAR)["text"])
-_extract_days = atop(unique, (r | _PATTERN_DAY)["text"], _strip_year, _strip_part, file_name)
+_aoc_est_now = atop(dict(zone=EST_OFFSET)|date.undo, time)
+_recent_year = fork(same["year"], subtract, atop(less|12, same["month"]))
+_cur_day_dec = fork(same["day"], minimum, atop(less|2025, same["year"]).agenda(Array([12, 25])))
+_strip_part = replace|Array([r"part.*$", ""])
+_strip_year = replace|Array([_PATTERN_YEAR, ""])
+_extract_yrs = atop(unique, vfi[1][0].each, (r|_PATTERN_YEAR)["text"])
+_extract_days = atop(unique, (r|_PATTERN_DAY)["text"], _strip_year, _strip_part, file_name)
 
-
+# %% ../nbs/02_get.ipynb #882d3cf8
 def _most_recent_year():
     "This year if December (AoC EST), otherwise last year."
     yr = _recent_year(_aoc_est_now(0))
     if int(yr) < 2015: raise AocdError("Time travel not supported yet")
     return yr
 
-
+# %% ../nbs/02_get.ipynb #9f61aa60
 def _current_day():
     "Most recent unlocked AoC day in December (EST), or `Array(1)` otherwise."
     now = _aoc_est_now(0)
     return _cur_day_dec(now) if int(now.month) == 12 else Array(1)
 
-
+# %% ../nbs/02_get.ipynb #ef5092df
 def _get_solveit_path():
     "Detect the active SolveIt dialog path via `dialoghelper`, or None."
     try:
@@ -52,7 +52,7 @@ def _get_solveit_path():
     except Exception:
         return None
 
-
+# %% ../nbs/02_get.ipynb #19df189b
 def _extract_day_year_from_path(abspath):
     "Parse `(day, year)` from a file path via tacit `_extract_yrs` and `_extract_days`."
     yrs = _extract_yrs(abspath)
@@ -62,7 +62,7 @@ def _extract_day_year_from_path(abspath):
     if len(days) == 1: return Array(int(pystr(days[0]))), year
     raise AocdError("Failed introspection of day")
 
-
+# %% ../nbs/02_get.ipynb #14908160
 def get_puzzle(session=None, day=None, year=None):
     "Get a puzzle for the given date, using the SolveIt dialog or calendar for omitted values."
     if (day is None or year is None) and (dialog := _get_solveit_path()) is not None:
@@ -76,7 +76,7 @@ def get_puzzle(session=None, day=None, year=None):
     tok = default_token() if session is None else bstr(session)
     return Puzzle(year=int(_most_recent_year() if year is None else year), day=int(_current_day() if day is None else day), token=tok)
 
-
+# %% ../nbs/02_get.ipynb #82ac6b25
 def submit(answer, part=None, reopen=True, quiet=False, *, puzzle=None):
     "Submit an answer for a supplied puzzle or for the current SolveIt puzzle."
     if puzzle is None: puzzle = get_puzzle()
