@@ -22,11 +22,11 @@
 ``` python
 from baocd import get_puzzle
 
-puzzle = get_puzzle(day=1, year=2026)
-lines = puzzle.input_data
-example = puzzle.example
+p = get_puzzle(day=1, year=2026)
+lines = p.input_data
+ex = p.example
 answer = ...
-puzzle.submit(answer)
+p.submit(answer)
 ```
 
 `.input_data` is a BPL `Array` of **split lines**. For the raw text format use `.raw_input_data`.
