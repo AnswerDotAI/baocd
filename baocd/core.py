@@ -16,10 +16,10 @@ from types import SimpleNamespace
 from basedpl import *
 from baocd.utils import (
     AocdError, DeadTokenError, PuzzleLockedError,
-    aiter, atomic_write_file, beq, bhas, bjoin, brstrip_nl, bsplit_lines,
+    beq, bhas, bjoin, brstrip_nl, bsplit_lines,
     bstartswith, bstr, bstrip, bwords, coerce, env_get, expand_path,
     http_get, http_post, is_file, join_path, pystr, read_json, read_text,
-    rec_has, rec_set, tag_texts, unescape_html, write_json, write_text,
+    rec_set, tag_texts, unescape_html, write_json, write_text,
 )
 
 # %% ../nbs/01_core.ipynb #dd9893b6
@@ -95,7 +95,7 @@ def user_id(token):
         try: _token2id = read_json(p)
         except FileNotFoundError: _token2id = json("{}")
     k = pystr(tok)
-    if not rec_has(_token2id, k):
+    if k not in _token2id.keys[0]:
         owner = get_owner(tok)
         _token2id = rec_set(_token2id, k, owner)
         write_json(p, _token2id)
@@ -131,7 +131,7 @@ def raw_input_data(year, day, token):
     if st >= 400:
         if st == 404: raise PuzzleLockedError(f"{year}/{day:02d} not available yet")
         raise AocdError(f"HTTP {st} at {pystr(url)}")
-    atomic_write_file(p, resp.body)
+    write_text(p, resp.body)
     return brstrip_nl(resp.body)
 
 # %% ../nbs/01_core.ipynb #81b1be47
@@ -220,7 +220,7 @@ def submit_answer(year, day, value, part=None, token=None, reopen=True, quiet=Fa
     v_int = int(v_str) if (len(v_res[0]) == 1 and bool(v_res[0][0]) and len(r(v_arr, r"^-?\d+$").text)) else None
     skips = (Array("You gave an answer too recently"), Array("You don't seem to be solving the right level"))
 
-    for res in aiter(submit_results(year, day, tok)):
+    for res in submit_results(year, day, tok):
         if not beq(res["part"], p_arr): continue
         msg = res["message"]
         if any(bool(bstartswith(sp, msg)) for sp in skips): continue
