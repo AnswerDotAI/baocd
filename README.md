@@ -19,14 +19,20 @@
 
 ## Usage
 
+### Get Data
+
 ``` python
 from baocd import get_puzzle
 
 p = get_puzzle(day=1, year=2026)
 lines = p.input_data
 ex = p.example
-answer = ...
+```
+
+### Submit
+
+``` python
 p.submit(answer)
 ```
 
-`.input_data` is a [BPL](https://github.com/AnswerDotAI/basedpl) `Array` of **split lines**. For the raw text format use `.raw_input_data`.
+`input_data` is a [BPL](https://github.com/AnswerDotAI/basedpl) `Array` of split lines. For the raw text format use `.raw_input_data`.
