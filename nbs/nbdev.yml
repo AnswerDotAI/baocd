@@ -1,0 +1,14 @@
+project:
+  output-dir: _docs
+
+website:
+  title: "baocd"
+  site-url: "https://AnswerDotAI.github.io/baocd"
+  description: "Advent of Code Data reimplemented in BPL Python (BasedPL)"
+  repo-branch: main
+  repo-url: "https://github.com/AnswerDotAI/baocd"
+
+format-links:
+  - html
+  - format: commonmark
+    text: Markdown
