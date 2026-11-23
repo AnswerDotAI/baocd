@@ -1,4 +1,4 @@
-"""Ultra-lean AoC token cache, functional puzzle operations (pre-split `input_data` & `examples`, `title`, `answer`, guardrailed `submit_answer`), and thin `Puzzle` facade with `Puzzle.submit`
+"""AoC token cache, puzzle operations (`input_data`, `examples`, `title`, `answer`, `submit_answer`), and `Puzzle` interface.
 
 Docs: https://AnswerDotAI.github.io/baocd/core.html.md"""
 
